@@ -155,9 +155,14 @@ def create_character():
         print("Invalid choice. Defaulting to Warrior.")
         return Warrior(name)
 
-def battle(player, wizard):
-    while wizard.health > 0 and player.health > 0:
-        print("\n--- Your Turn ---")
+def battle(players, wizard):
+    total_player_count = len(players)
+    turn = 1
+    while wizard.health > 0 and total_player_count > 0:
+        if turn > total_player_count:
+            turn = 1
+        player = players[turn-1]
+        print(f"\n --- {player.name}'s turn ---")
         print("1. Attack")
         print("2. Use Special Ability")
         print("3. Heal")
@@ -181,15 +186,22 @@ def battle(player, wizard):
             wizard.attack(player, wizard.attack_power)
 
         if player.health <= 0:
-            print(f"{player.name} has been defeated!")
-            break
+            del players[turn-1]
+            total_player_count = len(players)
+        turn += 1
 
     if wizard.health <= 0:
         print(f"The wizard {wizard.name} has been defeated by {player.name}!")
+    else:
+        print(f"The wizard {wizard.name} has defeated all players!")
 def main():
-    player = create_character()
+    total_players = input("Choose how many players: ")
+    players = []
+    for n in range(int(total_players)):
+        player = create_character()
+        players.append(player)
     wizard = EvilWizard("The Dark Wizard")
-    battle(player, wizard)
+    battle(players, wizard)
 
 if __name__ == "__main__":
     main()
