@@ -46,8 +46,8 @@ class Character:
             print(f"Invalid choice, defaulting to {self.special_ability_1.name}")
             self.special_ability_1.use(self, opponent)
 
-    def heal(self):
-        heal_amount = 25
+    def heal(self, multiplier = 1):
+        heal_amount = 25 * multiplier
         if(self.max_health > (self.health + heal_amount)):
             self.health += heal_amount
             print(f"{self.name} heals {self.name} by {heal_amount}!")
@@ -62,11 +62,15 @@ class Character:
 class Warrior(Character):
     def __init__(self, name):
         super().__init__(name, health=140, attack_power=25)
+        self.special_ability_1 = Bezerk()
+        self.special_ability_2 = Bombard()  
 
 # Mage class (inherits from Character)
 class Mage(Character):
     def __init__(self, name):
         super().__init__(name, health=100, attack_power=35)
+        self.special_ability_1 = StealthAttack()
+        self.special_ability_2 = SuperHeal() 
 
 # Archer class (inherits from Character)
 class Archer(Character):
@@ -104,8 +108,12 @@ class QuickShot(SpecialAbility):
         super().__init__("Quick Shot")
 
     def use(self, user, opponent):
-        print(f"{user.name} uses {self.name} to deal double damage")
-        user.attack(opponent, user.attack_power*2)
+        succeful_attack = random.randint(1,2)
+        if succeful_attack == 1:
+            print(f"{user.name} uses {self.name} to deal double damage")
+            user.attack(opponent, user.attack_power*2)
+        else:
+            print(f"{user.name} uses {self.name} to deal double damage but misses")
 
 class Evade(SpecialAbility):
     def __init__(self):
@@ -120,9 +128,9 @@ class HolyStrike(SpecialAbility):
         super().__init__("Holy Strike")
 
     def use(self, user, opponent):
-        bonus_damage = random.randint(0, user.attack_power*2)
-        print(f"{user.name} uses {self.name} to add {bonus_damage} worth of bonus damage to attack")
-        user.attack(opponent, (user.attack_power + bonus_damage))
+        bonus_damage = random.randint(0, user.attack_power)
+        print(f"{user.name} uses {self.name} to add {bonus_damage} worth of bonus damage to attack but with half the initial attack_power")
+        user.attack(opponent, ((user.attack_power//2) + bonus_damage))
 
 class DivineShield(SpecialAbility):
     def __init__(self):
@@ -131,6 +139,52 @@ class DivineShield(SpecialAbility):
     def use(self, user, opponent):
         user.shield += user.attack_power
         print(f"{user.name} uses {self.name} to add {user.attack_power} worth of protection to their shield")
+
+class Bezerk(SpecialAbility):
+    def __init__(self):
+        super().__init__("Bezerk")
+
+    def use(self, user, opponent):
+        user.attack(opponent, user.attack_power*3)
+        user.health -= user.attack_power
+        print(f"{user.name} uses {self.name} to triple attack strength but deals {user.attack_power} damage to themselves")
+
+class Bombard(SpecialAbility):
+    def __init__(self):
+        super().__init__("Bombard")
+
+    def use(self, user, opponent):
+        multiplier = random.randint(1, 4)
+        print(f"{user.name} uses {self.name} to attack {multiplier} times with half damage")
+        for i in range(0, multiplier):
+            user.attack(opponent, user.attack_power//2)
+
+class StealthAttack(SpecialAbility):
+    def __init__(self):
+        super().__init__("Stealth Attack")
+    
+    def use(self, user, opponent):
+        succeful_evade = random.randint(1,2)
+        if succeful_evade == 1:
+            print(f"{user.name} uses {self.name} to deal half the damage and evades next attack")
+            user.evade = True
+        else:
+            print(f"{user.name} uses {self.name} to deal half the damage but fails to evade next attack")   
+        user.attack(opponent, user.attack_power//2)
+
+class SuperHeal(SpecialAbility):
+    def __init__(self):
+        super().__init__("Super Heal")
+
+    def use(self, user, opponent):
+        succeful_heal = random.randint(1,2)
+        if succeful_heal == 1:
+            print(f"{user.name} uses {self.name} to heal twice as much")
+            user.heal(2)
+        else:
+            print(f"{user.name} uses {self.name} to heal twice as much but fails")
+
+    
 
 def create_character():
     print("Choose your character class:")
@@ -191,7 +245,7 @@ def battle(players, wizard):
         turn += 1
 
     if wizard.health <= 0:
-        print(f"The wizard {wizard.name} has been defeated by {player.name}!")
+        print(f"The wizard {wizard.name} has been defeated with {player.name} landing the final blow!")
     else:
         print(f"The wizard {wizard.name} has defeated all players!")
 def main():
